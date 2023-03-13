@@ -1,2 +1,2 @@
-# time_series_ML
-Where we use Neural Network to study and predict stock prices time series.
+# Classification-of-Time-Series
+Where we read, interpolate and learn a database of time series each assigned to one of three categories. 
