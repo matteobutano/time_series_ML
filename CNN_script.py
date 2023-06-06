@@ -113,7 +113,7 @@ model_CNN=compile_model()
 history=model_CNN.fit(X_train, Y_train,
           batch_size=batch_size,
           epochs=epochs,
-          verbose=0,
+          verbose=1,
           validation_data=(X_test, Y_test),callbacks=[early_stop])
 
 # evaluate model
@@ -159,8 +159,6 @@ chal_best = np.argmax(Y_chal,axis = 1)
 chal_results= np.array([chal_classes[i,chal_best[i]] for i in range(len(chal_best))])
 chal_preds = pd.DataFrame(np.vstack([IDs,chal_results]).transpose())
 chal_preds.columns = ['ID','reod']
-chal_preds
-
 
 chal_preds.to_csv('output_test.csv',index=False)
 
