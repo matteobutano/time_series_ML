@@ -161,4 +161,3 @@ chal_preds = pd.DataFrame(np.vstack([IDs,chal_results]).transpose())
 chal_preds.columns = ['ID','reod']
 
 chal_preds.to_csv('output_test.csv',index=False)
-

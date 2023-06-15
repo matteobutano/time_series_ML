@@ -1,3 +1,4 @@
-run.slur
-training.out
-training.txt
+*.slurm
+*.out
+*.txt
+*.sh
