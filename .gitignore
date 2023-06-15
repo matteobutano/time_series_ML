@@ -1,4 +1,4 @@
-*.slurm
+*.slur
 *.out
 *.txt
 *.sh
