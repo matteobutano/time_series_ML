@@ -3,22 +3,20 @@
 
 import pandas as pd
 import numpy as np
-import time
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import requests
 from sklearn.preprocessing import StandardScaler
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Flatten, Input, BatchNormalization, Activation
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Flatten, Input, BatchNormalization
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.regularizers import l2
 
-in_data_1 = pd.read_csv('https://drive.google.com/uc?id=19xQWXaqtF685BP9-awsRgNv77udv0-sx')
-in_data_2 = pd.read_csv('https://drive.google.com/uc?id=19vESYitHjVR2nEiMgLOiEVlIr4LOTGX4')
-in_data_3 = pd.read_csv('https://drive.google.com/uc?id=1FJACauRxbNuilgXm-eg7s-K4HM1sAoeA')
-in_data = pd.concat([in_data_1,in_data_2,in_data_3],axis = 0,ignore_index = True)
-out_data = pd.read_csv('https://drive.google.com/uc?id=19i5CWvm9-wNXVwF-wiBODty0mPdupyLQ')['reod']
+# First, we import the input and output datasets.
 
+in_data = pd.read_csv('knn_imputed_input_training.csv')
+out_data = pd.read_csv('output_training.csv')['reod']
 
 # The next cell specifies the training, test and prediction datasets chosen randomly. 
 
@@ -26,11 +24,12 @@ train_fraction = 0.9
 test_fraction = 1 - train_fraction
 
 #Randomly choose elements for each sub-dataset
+
 train_index = np.random.choice(range(in_data.shape[0]), size = int(train_fraction*in_data.shape[0]),replace = False)
 test_index = np.random.choice(np.delete(range(in_data.shape[0]),train_index), size = int(test_fraction*in_data.shape[0]),replace = False)
 
-
 # Here we reshape the dataset to be fed the DNN
+
 X_train = in_data.iloc[train_index].values
 Y_train = out_data[train_index].values
 X_test = in_data.iloc[test_index].values
@@ -53,7 +52,7 @@ print('Y_train shape:', Y_train.shape)
 print('X_test shape:', X_test.shape)
 print('Y_test shape:', Y_test.shape)
 
-# Training parameters
+# training parameters
 batch_size = 128
 epochs = 100
 
@@ -62,12 +61,12 @@ def create_CNN():
     model = Sequential()
     model.add(Input(shape=(53, 1, 1)))
     
-    model.add(Conv2D(256, (9, 1),activation='relu', padding='same'))
+    model.add(Conv2D(256, (13, 1),activation='relu', padding='same'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 1)))
     model.add(Dropout(0.3))
     
-    model.add(Conv2D(256, (9, 1),activation='relu', padding='same'))
+    model.add(Conv2D(256, (13, 1),activation='relu', padding='same'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 1)))
     model.add(Dropout(0.3))
@@ -81,7 +80,6 @@ def create_CNN():
     model.add(Dense(256, activation='relu', kernel_regularizer=l2(0.001)))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    
     
     model.add(Dense(num_classes, activation='softmax'))
     
@@ -143,13 +141,12 @@ ax[1].legend(['train', 'test'], loc='best')
 
 plt.savefig('CNN Training vs Test.png')
 
-# Import test set and predict categories
+# Finally we import the input data from which we want to predict the output for the challenge, treat it the way we did with the other and then use the DNN to predict the outcome to submit. 
 
-chal_in_data_1 = pd.read_csv('https://drive.google.com/uc?id=1Zlh9JkPFc7vmudIyT0-UcloOUkP5tcY8')
-chal_in_data_2 = pd.read_csv('https://drive.google.com/uc?id=1qNDlxFtF4ZEjcEl7NWo-zMft8ifTfabP')
-chal_in_data_3 = pd.read_csv('https://drive.google.com/uc?id=1VZdfOQNI64syZd1-VkyKr0sNDeztAFEb')
-chal_in_data = pd.concat([chal_in_data_1,chal_in_data_2,chal_in_data_3],axis = 0,ignore_index = True).values
+chal_in_data = pd.read_csv('knn_imputed_input_test.csv').values
 IDs = np.arange(1e6,1e6 + chal_in_data.shape[0],dtype = int)
+
+# Here we predict the output and create the corresponding dataframe.
 
 X_chal = scaler.transform(chal_in_data)
 X_chal = X_chal.reshape(X_chal.shape[0], X_chal.shape[1], 1, 1)
@@ -159,5 +156,6 @@ chal_best = np.argmax(Y_chal,axis = 1)
 chal_results= np.array([chal_classes[i,chal_best[i]] for i in range(len(chal_best))])
 chal_preds = pd.DataFrame(np.vstack([IDs,chal_results]).transpose())
 chal_preds.columns = ['ID','reod']
+chal_preds
 
 chal_preds.to_csv('output_test.csv',index=False)
